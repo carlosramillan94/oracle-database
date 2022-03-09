@@ -1,0 +1,17 @@
+version: '2'
+services:
+  database:
+    image: database:19.3.0-ee
+ #   volumes:
+ #     - ./oradata:/opt/oracle/oradata # persistent oracle database data.
+    ports:
+      - 1521:1521
+      - 8080:8080
+      - 5500:5500
+    environment:
+      - ORACLE_SID=EE
+      - ORACLE_PDB=COMUNES
+      - ORACLE_PWD=uco1234567
+      - ORACLE_EDITION=standard
+      - ORACLE_CHARACTERSET=AL32UTF8
+      - ENABLE_ARCHIVELOG=false
