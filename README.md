@@ -12,6 +12,12 @@ To assist in building the images, you can use the [buildContainerImage.sh](docke
 
 The `buildContainerImage.sh` script is just a utility shell script that performs MD5 checks and is an easy way for beginners to get started. Expert users are welcome to directly call `docker build` or `podman build` with their preferred set of parameters.
 
+### Requirements
+**IMPORTANT:** You will have to provide the installation binaries of Oracle Database and put them into the  `files` folder.
+You only need to provide the binaries for the edition you are going to install in this case "19C"". 
+The binaries can be downloaded from the [Oracle Technology Network](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html), make sure you use the linux link: *Linux x86-64*. The needed file is named *linuxx64_\<version\>_database.zip*. You also have to make sure to have internet connectivity for yum. Note that you must not uncompress the binaries. The script will handle that for you and fail if you uncompress them manually!
+
+
 ### Building Oracle Dartabase container images without .sh script
 
 Before you build the image make sure that you have provided the installation binaries and put them into the right folder. Once you have to run the **buildContainerImage.sh** script:
@@ -20,26 +26,21 @@ Before you build the image make sure that you have provided the installation bin
 
 ### Building Oracle Database container images
 
-**IMPORTANT:** You will have to provide the installation binaries of Oracle Database and put them into the  `files` folder. You only need to provide the binaries for the edition you are going to install. The binaries can be downloaded from the [Oracle Technology Network](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html), make sure you use the linux link: *Linux x86-64*. The needed file is named *linuxx64_\<version\>_database.zip*. You also have to make sure to have internet connectivity for yum. Note that you must not uncompress the binaries. The script will handle that for you and fail if you uncompress them manually!
-
 Before you build the image make sure that you have provided the installation binaries and put them into the right folder. Once you have to run the **buildContainerImage.sh** script:
 
     [oracle@localhost dockerfiles]$ ./buildContainerImage.sh -h
     
-    Usage: buildContainerImage.sh -v [version] -t [image_name:tag] [-e | -s | -x] [-i] [-o] [container build option]
+    Usage: buildContainerImage.sh -t [image_name:tag] [-i] [-o] [container build option]
     Builds a container image for Oracle Database.
     
     Parameters:
-       -v: version to build
-           Choose one of: 19.3.0
-       -t: image_name:tag for the generated docker image
-       -s: creates image based on 'Standard Edition 2'
+       -t: image_name:19.3.0 for the generated docker image
        -i: ignores the MD5 checksums
        -o: passes on container build option
 
 EXAMPLE: 
 
-    ./buildContainerImage.sh -v 19.3.0 -t database:19.3.0-ee -s -i -o
+    ./buildContainerImage.sh -t database:19.3.0-ee -i
 
 **IMPORTANT:** The resulting images will be an image with the Oracle binaries installed. On first startup of the container a new database will be created, the following lines highlight when the database is ready to be used:
 
@@ -54,8 +55,6 @@ The character set for the database is set during creating of the database. You c
 **NOTE**: This section is intended for container images 19c. By default, SLIMMING is **true** to remove some components from the image with the intention of making the image slimmer. These removed components cause problems while patching after building patching extension. So, to use patching extension one should use additional build argument `-o '--build-arg SLIMMING=false'` while building the container image. Example command for building the container image is as follows:
 
     ./buildContainerImage.sh -e -v 21.3.0 -o '--build-arg SLIMMING=false'
-
-### Running Oracle Database in a container
 
 #### Running Oracle Database Standard Edition 2 in a container
 
@@ -117,12 +116,6 @@ The Oracle Database inside the container also has Oracle Enterprise Manager Expr
     https://localhost:5500/em/
 
 **NOTE**: Oracle Database bypasses file system level caching for some of the files by using the `O_DIRECT` flag. It is not advised to run the container on a file system that does not support the `O_DIRECT` flag.
-
-#### Selecting the Edition (Supported from 19.3.0 release)
-
-The edition of the database can be changed during runtime by passing the ORACLE_EDITION parameter to the `docker run` command. Therefore, an enterprise container image can be used to run standard edition database and vice-versa. You can find the edition of the running database in the output line:
-
-    ORACLE EDITION:
 
 This parameter modifies the software home binaries but it doesn't have any effect on the datafiles. So, if existing datafiles are reused to bring up the database, the same ORACLE_EDITION must be passed as the one used to create the datafiles for the first time.
 
