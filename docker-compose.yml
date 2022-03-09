@@ -2,8 +2,8 @@ version: '2'
 services:
   database:
     image: database:19.3.0-ee
- #   volumes:
- #     - ./oradata:/opt/oracle/oradata # persistent oracle database data.
+    volumes:
+      - oradata:/opt/oracle/oradata
     ports:
       - 1521:1521
       - 8080:8080
@@ -15,3 +15,5 @@ services:
       - ORACLE_EDITION=standard
       - ORACLE_CHARACTERSET=AL32UTF8
       - ENABLE_ARCHIVELOG=false
+volumes:
+    oradata:

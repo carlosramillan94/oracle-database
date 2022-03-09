@@ -12,6 +12,12 @@ To assist in building the images, you can use the [buildContainerImage.sh](docke
 
 The `buildContainerImage.sh` script is just a utility shell script that performs MD5 checks and is an easy way for beginners to get started. Expert users are welcome to directly call `docker build` or `podman build` with their preferred set of parameters.
 
+### Building Oracle Dartabase container images without .sh script
+
+Before you build the image make sure that you have provided the installation binaries and put them into the right folder. Once you have to run the **buildContainerImage.sh** script:
+
+    docker build --force-rm=true --no-cache --build-arg DB_EDITION=se2 -t oracle:19c -f .
+
 ### Building Oracle Database container images
 
 **IMPORTANT:** You will have to provide the installation binaries of Oracle Database and put them into the  `files` folder. You only need to provide the binaries for the edition you are going to install. The binaries can be downloaded from the [Oracle Technology Network](http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html), make sure you use the linux link: *Linux x86-64*. The needed file is named *linuxx64_\<version\>_database.zip*. You also have to make sure to have internet connectivity for yum. Note that you must not uncompress the binaries. The script will handle that for you and fail if you uncompress them manually!

@@ -1,27 +1,4 @@
-# LICENSE UPL 1.0
-#
-# Copyright (c) 2018, 2021 Oracle and/or its affiliates.
-#
-# ORACLE DOCKERFILES PROJECT
-# --------------------------
-# This is the Dockerfile for Oracle Database 19c
-# 
-# REQUIRED FILES TO BUILD THIS IMAGE
-# ----------------------------------
-# (1) db_home.zip
-#     Download Oracle Database 19c Enterprise Edition or Standard Edition 2 for Linux x64
-#     from http://www.oracle.com/technetwork/database/enterprise-edition/downloads/index.html
-#
-# HOW TO BUILD THIS IMAGE
-# -----------------------
-# Put all downloaded files in the files directory in this project
-# Run: 
-#      $ docker build -t oracle/database:19.3.0-${EDITION} . 
-#
-# Pull base image
-# ---------------
 FROM oraclelinux:7-slim as base
-
 # Labels
 # ------
 LABEL "volume.data"="/opt/oracle/oradata"                               \
@@ -127,7 +104,7 @@ USER oracle
 WORKDIR /home/oracle
 
 HEALTHCHECK --interval=1m --start-period=5m \
-   CMD "$ORACLE_BASE/$CHECK_DB_FILE" >/dev/null || exit 1
+   CMD "$ORACLE_BASE/$CHECK_DB_FILE" > /dev/null || exit 1
 
 # Define default command to start Oracle Database. 
 CMD exec $ORACLE_BASE/$RUN_FILE

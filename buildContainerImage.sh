@@ -1,24 +1,21 @@
 #!/bin/bash -e
-# 
+#
 # Since: April, 2016
 # Author: gerald.venzl@oracle.com
 # Description: Build script for building Oracle Database container images.
-# 
+#
 # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
-# 
+#
 # Copyright (c) 2014,2021 Oracle and/or its affiliates.
-# 
+#
 
 usage() {
   cat << EOF
-Usage: buildContainerImage.sh -v [version] -t [image_name:tag] [-s] [-i] [-o] [container build option]
+Usage: buildContainerImage.sh -t [image_name:tag] [-i] [-o] [container build option]
 Builds a container image for Oracle Database.
 
 Parameters:
-   -v: version to build
-       Choose one of: $(for i in */; do echo -n "${i%%/}  "; done)
    -t: image_name:tag for the generated docker image
-   -s: creates image based on 'Standard Edition 2'
    -i: ignores the MD5 checksums
    -o: passes on container build option
 
@@ -46,34 +43,13 @@ checksumPackages() {
 # Check container runtime
 checkContainerRuntime() {
   CONTAINER_RUNTIME=$(which docker 2>/dev/null) ||
-    CONTAINER_RUNTIME=$(which podman 2>/dev/null) ||
     {
-      echo "No docker or podman executable found in your PATH"
+      echo "No docker executable found in your PATH"
       exit 1
     }
 
   if "${CONTAINER_RUNTIME}" info | grep -i -q buildahversion; then
-    checkPodmanVersion
-  else
     checkDockerVersion
-  fi
-}
-
-# Check Podman version
-checkPodmanVersion() {
-  # Get Podman version
-  echo "Checking Podman version."
-  PODMAN_VERSION=$("${CONTAINER_RUNTIME}" info --format '{{.host.BuildahVersion}}' 2>/dev/null ||
-                   "${CONTAINER_RUNTIME}" info --format '{{.Host.BuildahVersion}}')
-  # Remove dot in Podman version
-  PODMAN_VERSION=${PODMAN_VERSION//./}
-
-  if [ -z "${PODMAN_VERSION}" ]; then
-    exit 1;
-  elif [ "${PODMAN_VERSION}" -lt "${MIN_PODMAN_VERSION//./}" ]; then
-    echo "Podman version is below the minimum required version ${MIN_PODMAN_VERSION}"
-    echo "Please upgrade your Podman installation to proceed."
-    exit 1;
   fi
 }
 
@@ -96,20 +72,12 @@ checkDockerVersion() {
 #### MAIN ####
 ##############
 
-# Go into dockerfiles directory
-#cd $(dirname $0)
-
 # Parameters
-ENTERPRISE=0
-STANDARD=0
-EXPRESS=0
-# Obtaining the latest version to build
-#VERSION="$(ls -1rd *.*.* | sed -n 1p)"
+STANDARD=1
 VERSION=$0
 SKIPMD5=0
 declare -a BUILD_OPTS
 MIN_DOCKER_VERSION="17.09"
-MIN_PODMAN_VERSION="1.6.0"
 DOCKERFILE="Dockerfile"
 IMAGE_NAME=""
 
@@ -126,12 +94,6 @@ while getopts "hesxiv:t:o:" optname; do
       ;;
     "i")
       SKIPMD5=1
-      ;;
-    "s")
-      STANDARD=1
-      ;;
-    "v")
-      VERSION="${OPTARG}"
       ;;
     "t")
       IMAGE_NAME="${OPTARG}"
@@ -156,28 +118,15 @@ checkContainerRuntime
 # Which Edition should be used?
 if [ $((ENTERPRISE + STANDARD + EXPRESS)) -gt 1 ]; then
   usage
-elif [ ${ENTERPRISE} -eq 1 ]; then
-  EDITION="ee"
 elif [ ${STANDARD} -eq 1 ]; then
   EDITION="se2"
-elif [ ${EXPRESS} -eq 1 ]; then
-  if [ "${VERSION}" == "18.4.0" ]; then
-    EDITION="xe"
-    SKIPMD5=1
-  elif [ "${VERSION}" == "21.3.0" ]; then
-    EDITION="xe"
-    SKIPMD5=1
-  elif [ "${VERSION}" == "11.2.0.2" ]; then
-    EDITION="xe"
-    BUILD_OPTS=("--shm-size=1G" "${BUILD_OPTS[@]}")
-  else
+else
     echo "Version ${VERSION} does not have Express Edition available.";
     exit 1;
-  fi;
 fi;
 
 # Which Dockerfile should be used?
-if [ "${VERSION}" == "12.1.0.2" ] || [ "${VERSION}" == "11.2.0.2" ] || [ "${VERSION}" == "18.4.0" ] || { [ "${VERSION}" == "21.3.0" ] && [ "${EDITION}" == "xe" ]; }; then
+if { [ "${VERSION}" == "21.3.0" ] && [ "${EDITION}" == "xe" ]; }; then
   DOCKERFILE="${DOCKERFILE}.${EDITION}"
 fi;
 
