@@ -1,7 +1,7 @@
 version: '2'
 services:
   database:
-    image: database:19.3.0-ee
+    image: oracle/database:19.3.0-se2
     volumes:
       - oradata:/opt/oracle/oradata
     ports:
